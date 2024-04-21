@@ -21,13 +21,14 @@ USHORT                    Size;  // 2 -> 4
 # Large part, will not get into this for now as its not vulnurable for sure
 
 # InputOffset = 0x22A030:
-# Large part, will not get into this for now as its not vulnurable for sure
+This case sends a user provided byte to a user provided port with __outbyte(). MasterIrp->Type specifies the port number (its 2 bytes long
+so its just this value), the byte to send to the port is specified in MasterIrp.Size + 2 (lowest byte of the PMDL). 
 
 # InputOffset = 0x22A034:
-# Large part, will not get into this for now as its not vulnurable for sure
+This case is the same as 0x22A030, just this time the WORD to write is specified in the highest byte of Size and the lowest byte of PMDL (WORD = 2 bytes)
 
 # InputOffset = 0x22A038:
-# Large part, will not get into this for now as its not vulnurable for sure
+This case is the same as 0x22A030, just this time the DWORD to write is specified in the highest byte of Size and the 3 lowest byte of PMDL (DWORD = 4 bytes)
 
 # If InputOffset is not equal to any of those values and is higher than 0x22A000 (InputOffset has to be 0x22A051 or its not implemented):
 This case takes care of the possibility where invalid InputOffset is provided. if the left over is not eight (InputOffset != 0x22A051),
@@ -131,7 +132,7 @@ so basically:
 
 
 # InputOffset = 0x22604C:
-# Large part, will not get into this for now as its not vulnurable for sure
+# Large part, will not get into this for now as its not vulnurable for sure, SHOULD CHECK, RtlCopyMemory is used and theres a while loop that may be important
 
 
 # InputOffset = 0x226052:
@@ -142,7 +143,11 @@ it returns it from the MdlAddress_low variable. DOES THE EXACT SAME AS 0x22A049
 
 
 # InputOffset = 0x22605A:
-# Large part, will not get into this for now as its not vulnurable for sure
+In this case the lower 2 bytes of the MDL pointer (MasterIrp->MdlAddress) should be <= Length of input provided to the driver. if its not lower/equal STATUS_INVALID_PARAMETER is returned, which
+means that this is a clear requirement for the request. here, MasterIrp->Type(+Size) is interpreted as a char* which later goes into the same undocumented function as a pointer to 
+the caller provided I/O space, the same check is executed here to check if the module is already mapped to systemspace or not, if not mapping is called. also, when calling the undocumented
+function the lower 2 bytes of the MDL pointer are probably the Length/Size attribute in the MDL structure. size is returned and the driver exits.
+![save1](https://github.com/shaygitub/VulnDrivers/assets/122000611/5b30ca74-8b35-4aef-be6c-6904c791951a)
 
 
 # InputOffset = 0x226028:
@@ -165,3 +170,7 @@ and puts the returned WORD in the actual MasterIrp->Type attribute. also returns
 # Important final notes:
 1) Further analysis of sub_11D90 is probably needed to actually exploit the driver
 2) I dont have any experience with CPU ports / Hal functions so i ignored the cases where these are used as i still dont understand them
+3) Main user-provided parameters to figure out for this driver:
+   a) MasterIrp.Type (and size when a pointer/address is refrenced)
+   b) Read.ByteOffset (code of request to driver)
+   c) descriptor module provided to driver
