@@ -33,6 +33,21 @@ USHORT                    Size;  // 2 -> 4
 This case takes care of the possibility where invalid InputOffset is provided. if the left over is not eight (InputOffset != 0x22A051),
 the driver returns STATUS_NOT_IMPLEMENTED). when InputOffset = 0x22A051 firstly MasterIrp->Type is refrenced similarly to earlier operations,
 but this time the IRP.Type+Size are interpreted as an int* (in 32bits it just means that this is a pointer to a 4byte value).
+similarly to when InputOffset = 0x22A049, if the lower 32 bits of the MasterIrp->MdlAddress is higher than the input length - returns STATUS_INVALID_PARAM.
+this case seems to do the same as InputOffset = 0x22A049, but without creating the I/O space describing a physical address. the same int* is actually
+a pointer to a systemspace I/O space that was probably allocated earlier and returned to the user (its passed here as the same parameter of the driver allocated I/O space
+when InputOffset = 0x22A049).
+so basically:
+1) Both of these operations work on an I/O space and on a systemspace module descriptor that is provided by the user
+2) 0x22A051 gets the I/O space from the user as an int*, while 0x22A049 allocates the I/O space itself and gets the PHYSICAL_ADDRESS from the user in that same space
+3) Both of these operations call an undocumented function (sub_11D90) that probably operates on the MDL and/or on the I/O space
+4) 0x22A049 frees the locally allocated I/O space, while 0x22A051 doesnt (I/O space was provided by the user)
+5) Both of these operations get to lines 175/176 and return to Irp->IoStatus.Information (usually holds the amount of bytes that were operated
+on by the driver), makes sense as this case operated on the I/O space somehow and the amount returned is the size of the user provided
+system space module that describes the request
+* See more detailed information about the parameters and the information in InputOffset = 0x22A049
+![save8](https://github.com/shaygitub/VulnDrivers/assets/122000611/9e92569a-e0ad-4870-9786-b23d9320d827)
+
 
 # InputOffset = 0x22A049:
 if the lower 32 bits of the MasterIrp->MdlAddress is higher than the input length - returns STATUS_INVALID_PARAM
@@ -105,6 +120,7 @@ so basically:
 5) Irp->IoStatus.Information is set to 16 (the amount of input bytes operated on, here as i mentioned the minimum/needed amount is 16 so it makes sense)
 
 * This might be relevant to InputOffset = 0x22A004, which frees contiguous memory that is passed by the caller
-* This might also be relevant to InputOffset = 0x22A049, that operation receives a systemspace mapped descriptor module of some
+* This might also be relevant to InputOffset = 0x22A049/0x22A051, these operations receives a systemspace mapped descriptor module of some
   kind of memory (exactly part 3 here), this part should be called probably before as it checks if a systemspace module was provided, the self allocating else() statement is probably
-  just used to make sure
+  just used to make sure. This might be might be mainly relevant for 0x22A049 as 0x22A049 also gets a PHYSICAL_ADDRESS that gets described by the I/O space while 0x22A051 gets a user
+  provided I/O space. there is probably a more fitting case to 0x22A051 that returns an I/O space, need to check.
