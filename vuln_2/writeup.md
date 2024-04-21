@@ -29,7 +29,7 @@ USHORT                    Size;  // 2 -> 4
 # InputOffset = 0x22A038:
 # Large part, will not get into this for now as its not vulnurable for sure
 
-# If InputOffset is not equal to any of those values (InputOffset has to be 0x22A051 or its not implemented):
+# If InputOffset is not equal to any of those values and is higher than 0x22A000 (InputOffset has to be 0x22A051 or its not implemented):
 This case takes care of the possibility where invalid InputOffset is provided. if the left over is not eight (InputOffset != 0x22A051),
 the driver returns STATUS_NOT_IMPLEMENTED). when InputOffset = 0x22A051 firstly MasterIrp->Type is refrenced similarly to earlier operations,
 but this time the IRP.Type+Size are interpreted as an int* (in 32bits it just means that this is a pointer to a 4byte value).
