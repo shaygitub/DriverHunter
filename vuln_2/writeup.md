@@ -124,3 +124,44 @@ so basically:
   kind of memory (exactly part 3 here), this part should be called probably before as it checks if a systemspace module was provided, the self allocating else() statement is probably
   just used to make sure. This might be might be mainly relevant for 0x22A049 as 0x22A049 also gets a PHYSICAL_ADDRESS that gets described by the I/O space while 0x22A051 gets a user
   provided I/O space. there is probably a more fitting case to 0x22A051 that returns an I/O space, need to check.
+
+
+# InputOffset = 0x22602C:
+# Large part, will not get into this for now as its not vulnurable for sure
+
+
+# InputOffset = 0x22604C:
+# Large part, will not get into this for now as its not vulnurable for sure
+
+
+# InputOffset = 0x226052:
+This case is really similar to the earlier 0x22A049/0x22A051, this case also operates on a user provided descriptor module and an I/O space describing a PHYSICAL_ADDRESS. in this case
+the physical address is provided by the user similarly to 0x22A049, an I/O space to describe the physical address is created and operated on by the same undocumented function,
+also the same systemspace user provided module descriptor is used. the only difference here is that instead of returning the size of the descriptor module from the clear attribute
+it returns it from the MdlAddress_low variable. DOES THE EXACT SAME AS 0x22A049
+
+
+# InputOffset = 0x22605A:
+# Large part, will not get into this for now as its not vulnurable for sure
+
+
+# InputOffset = 0x226028:
+This case does the same as InputOffset = 0x226020, but instead of getting one byte from the specific CPU port it gets four bytes
+and puts the returned DWORD in MasterIrp->Type+Size attributes. also returns 4 bytes as the operated on amount of bytes
+
+
+# InputOffset = 0x226024:
+This case does the same as InputOffset = 0x226020, but instead of getting one byte from the specific CPU port it gets two bytes
+and puts the returned WORD in the actual MasterIrp->Type attribute. also returns 2 bytes as the operated on amount of bytes
+
+
+# InputOffset = 0x226020:
+1) Read one byte from a CPU port provided in MasterIrp->Type(+Size, DWORD = 4 bytes) using __inbyte
+2) Put that read value in the lowest significant byte of MasterIrp->Type (This will be the lowest significant byte of the
+   actual MasterIrp->Type attribute)
+3) Return 1 byte as the amount of bytes operated on
+
+
+# Important final notes:
+1) Further analysis of sub_11D90 is probably needed to actually exploit the driver
+2) I dont have any experience with CPU ports / Hal functions so i ignored the cases where these are used as i still dont understand them
