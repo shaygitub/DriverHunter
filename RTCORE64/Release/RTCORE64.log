@@ -1,0 +1,11 @@
+﻿  Ioctl.cpp
+H:\Reversing Drivers\RTCORE64\Ioctl.cpp(184,10): warning C4477: 'printf' : format string '%p' requires an argument of type 'void *', but variadic argument 2 has type 'ULONG64'
+H:\Reversing Drivers\RTCORE64\Ioctl.cpp(184,10): warning C4313: 'printf': '%p' in format string conflicts with argument 2 of type 'ULONG64'
+H:\Reversing Drivers\RTCORE64\Ioctl.cpp(187,9): warning C4477: 'printf' : format string '%p' requires an argument of type 'void *', but variadic argument 2 has type 'ULONG64'
+H:\Reversing Drivers\RTCORE64\Ioctl.cpp(187,9): warning C4313: 'printf': '%p' in format string conflicts with argument 2 of type 'ULONG64'
+  RTCORE64.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 10 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  RTCORE64.vcxproj -> H:\Reversing Drivers\RTCORE64\Release\RTCORE64.exe

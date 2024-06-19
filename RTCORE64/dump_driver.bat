@@ -1,0 +1,1 @@
+H:\Python\Python3.11\python.exe "H:\Reversing Drivers\~tools\driver_to_hexdump.py" "H:\Reversing Drivers\RTCORE64\3ecd3ca61ffc54b0d93f8b19161b83da.bin" "H:\Reversing Drivers\RTCORE64"
